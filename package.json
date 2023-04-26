@@ -1,0 +1,30 @@
+{
+    "name": "@BlueSkyStatistics/core-auth-manager",
+    "productName": "Auth Manager",
+    "description": "Auth manager that handles authorization",
+    "keywords": [
+        "auth",
+        "firebase",
+        "login"
+    ],
+    "main": "index.js",
+    "version": "1.0.0",
+    "author": "aspect13",
+    "scripts": {},
+    "dependencies": {
+        "asar": "^3.2.0",
+        "firebase": "^9.19.1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/BlueSkyStatistics/core-auth-manager.git"
+    },
+    "license": "AGLPL",
+    "bugs": {
+        "url": "https://github.com/BlueSkyStatistics/BlueSkyJS/issues"
+    },
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com"
+    },
+    "homepage": "https://www.blueskystatistics.com"
+}
