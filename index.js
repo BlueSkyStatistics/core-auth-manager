@@ -1,4 +1,3 @@
-const { BrowserWindow } = require('@electron/remote')
 const {getPath} = require("./utils");
 const {ipcRenderer} = require("electron");
 
@@ -65,7 +64,7 @@ const init = ({global}) => {
 const show = () => {
     ipcRenderer.send('setMainWindowVisible', false)
     if (authWindow === undefined || authWindow?.isDestroyed()) {
-        authWindow = new BrowserWindow({
+        authWindow = new global.RemoteBrowserWindow({
             width: 400, height: 600, center: true, transparent: false, frame: false, alwaysOnTop: true,
             show: false,
             // parent: global.mainWindow, modal: true,
