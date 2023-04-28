@@ -5,15 +5,31 @@ let authWindow;
 
 const init = ({global}) => {
     const userMenu = global.$(`
-        <div class="float-right btn-group m-0 unselectable" id="userMenu">
-            <button type="button" class="btn btn-secondary output-control p-0 m-0 small-label mr-3"
-                    style="-webkit-app-region: no-drag;">
-                <span class="material-icons md-14 mt-1">account_circle</span> <span id="displayName"></span>
-            </button>
-            <button type="button" class="btn btn-secondary p-0 m-0 small-label mr-3"
-                    style="-webkit-app-region: no-drag;" id="logOut">
-                <span class="material-icons md-14 mt-1">logout</span>
-            </button>
+        <div class="btn-group unselectable m-0 mr-2" id="userMenu">
+                <button class="dropdown-toggle btn btn-secondary d-flex align-items-center p-0 m-0" 
+                    id="userMenu_dropdown" 
+                    style="-webkit-app-region: no-drag;"
+                    data-target="userMenu_dropdown_items" 
+                    type="button" data-toggle="dropdown" 
+                    aria-haspopup="true" aria-expanded="false"
+                >
+                    <i class="material-icons md-14">face</i>
+                    <span class="btn-top-menu mx-1" id="displayName"></span>
+                </button>
+                <div 
+                    class="dropdown-menu tab-content-black" 
+                    id="userMenu_dropdown_items" 
+                    aria-labelledby="userMenu_dropdown"
+                >
+                        <button 
+                            class="btn btn-secondary btn-top-menu btn-chapter text-white text-left mt-0 mb-0 pt-0 pb-0 pr-1 w-100" 
+                            style="-webkit-app-region: no-drag;"
+                            id="logOut"
+                        >
+                            <i class="material-icons md-14">logout</i>
+                            <span>Log Out</span>
+                        </button>
+                </div>
         </div>
     `)
     userMenu.find('button#logOut').on('click', () => {
@@ -22,8 +38,6 @@ const init = ({global}) => {
     })
     global.$(() => {
         global.$('#header').append(userMenu)
-        const {displayName, email} = store.get('user')
-        global.$('#userMenu').find('#displayName').text(displayName || email)
     })
 
     ipcRenderer.on('authSetUser', (event, argument) => {
@@ -47,14 +61,20 @@ const init = ({global}) => {
     })
 
 
-
     ipcRenderer.on('switchMainVisibility', (event, argument) => {
         console.log('Switch', argument)
-        // if (argument.isVisible) {
-        //     ipcRenderer.send('bsevent', {event: 'notify', data: {message: 'AUTH WINDOW OPEN'}})
-        // } else {
-        //     ipcRenderer.send('bsevent', {event: 'notify', data: {message: 'AUTH WINDOW CLOSED'}})
-        // }
+        if (argument.isVisible) {
+            // ipcRenderer.send('bsevent', {event: 'notify', data: {message: 'AUTH WINDOW OPEN'}})
+        } else {
+            // ipcRenderer.send('bsevent', {event: 'notify', data: {message: 'AUTH WINDOW CLOSED'}})
+            const {displayName, email, isAnonymous} = store.get('user', {})
+            global.window.console.log('HIDE', {displayName, email, isAnonymous})
+            const dropdownText = isAnonymous ? '' : displayName || email
+            global.$('#userMenu').find('#userMenu_dropdown > i').css('display', isAnonymous ? 'initial' : 'none')
+            global.$('#userMenu').find('#userMenu_dropdown_items > button > span').text(isAnonymous ? 'Log In' : 'Log Out')
+            global.$('#userMenu').find('#userMenu_dropdown_items > button > i.material-icons').text(isAnonymous ? 'login' : 'logout')
+            global.$('#userMenu').find('#displayName').text(dropdownText)
+        }
         ipcRenderer.send('setMainWindowVisible', !argument.isVisible)
     })
 
