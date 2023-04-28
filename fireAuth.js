@@ -23,20 +23,20 @@ $(async () => {
             window.LM = new LoginManager()
         }
 
-        const loggedInUserProxy = getDivProxy('#loggedInUser')
+        // const loggedInUserProxy = getDivProxy('#loggedInUser')
 
         if (user) {
             // User is signed in, see docs for a list of available properties
             // https://firebase.google.com/docs/reference/js/firebase.User
             console.log('signed in', user)
-            loggedInUserProxy.text = `Hi, ${user.uid}! You are logged in`
+            // loggedInUserProxy.text = `Hi, ${user.displayName}! You are logged in`
 
             const {uid, displayName, email, isAnonymous} = user
             const bsUser = {uid, displayName, email, isAnonymous}
-            if (user.isAnonymous) {
-                bsUser.displayName = 'Anonymous'
-                bsUser.email = ''
-            } else {
+            // if (user.isAnonymous) {
+            //     bsUser.displayName = 'Anonymous'
+            //     bsUser.email = ''
+            // } else {
                 const tokenUrl = firebaseConfig.authTokenUrl
                 console.log('fetching custom token')
                 const customTokenResp = await fetch(tokenUrl, {
@@ -51,7 +51,7 @@ $(async () => {
                 } else {
                     console.error('Error getting custom token', customTokenResp)
                 }
-            }
+            // }
             console.log('setting store user', bsUser)
             setUser(bsUser)
             console.log('user set in store')
@@ -71,7 +71,7 @@ $(async () => {
             // ...
             // console.log('signed out')
             // store.delete('user')
-            loggedInUserProxy.text = 'Sign in'
+            // loggedInUserProxy.text = 'Sign in'
             await LM.restoreUser()
         }
     })

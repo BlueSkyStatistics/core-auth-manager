@@ -8,13 +8,13 @@ const {
     signOut,
     signInWithCustomToken,
     // signInWithCredential,
-    signInAnonymously,
+    // signInAnonymously,
     // connectAuthEmulator
 } = require("firebase/auth")
 
 
 const {getInputProxy, getDivProxy} = require("./utils");
-const {getUser, deleteUser, showWindow} = require("./actions");
+const {getUser, deleteUser, showWindow, setUser} = require("./actions");
 
 
 
@@ -75,7 +75,12 @@ class LoginManager {
         this.clearErrors()
         console.log('logging in anonymously')
         try {
-            await signInAnonymously(auth)
+            // await signInAnonymously(auth)
+            const bsUser = {uid: '', displayName: '', email: '', isAnonymous: true}
+            console.log('setting store user', bsUser)
+            setUser(bsUser)
+            console.log('user set in store')
+            window.close()
         } catch (e) {
             this.handleSignInError(e)
         }
