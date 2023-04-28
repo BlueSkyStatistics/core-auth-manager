@@ -13,3 +13,12 @@ resources/sass/.sass-cache/
 resources/.arch-internal-preview.css
 .arch-internal-preview.css
 node_modules/
+firebaseFunc/.gitignore
+firebaseFunc/firebase-debug.log
+firebaseFunc/.firebaserc
+firebaseFunc/package-lock.json
+firebaseFunc/node_modules
+firebaseFunc/functions/node_modules
+firebaseFunc/functions/package-lock.json
+firebaseFunc/functions/firebaseAdmin.json
+

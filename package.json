@@ -13,7 +13,8 @@
     "scripts": {},
     "dependencies": {
         "asar": "^3.2.0",
-        "firebase": "^9.19.1"
+        "firebase": "^9.19.1",
+        "jquery": "3.5.1"
     },
     "repository": {
         "type": "git",
