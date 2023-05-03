@@ -56,13 +56,13 @@ const init = ({global}) => {
     })
 
     ipcRenderer.on('setAuthWindowVisible', (event, argument) => {
-        console.log('arg', argument)
+        // console.log('arg', argument)
         argument ? authWindow.show() : authWindow.hide()
     })
 
 
     ipcRenderer.on('switchMainVisibility', (event, argument) => {
-        console.log('Switch', argument)
+        // console.log('Switch', argument)
         if (argument.isVisible) {
             // ipcRenderer.send('bsevent', {event: 'notify', data: {message: 'AUTH WINDOW OPEN'}})
         } else {
@@ -72,6 +72,7 @@ const init = ({global}) => {
             const dropdownText = isAnonymous ? '' : displayName || email
             global.$('#userMenu').find('#userMenu_dropdown > i').css('display', isAnonymous ? 'initial' : 'none')
             global.$('#userMenu').find('#userMenu_dropdown_items > button > span').text(isAnonymous ? 'Log In' : 'Log Out')
+            global.$('#userMenu').find('#userMenu_dropdown_items > button').attr('disabled', !!store.get('offline'))
             global.$('#userMenu').find('#userMenu_dropdown_items > button > i.material-icons').text(isAnonymous ? 'login' : 'logout')
             global.$('#userMenu').find('#displayName').text(dropdownText)
         }
@@ -85,7 +86,7 @@ const show = () => {
     ipcRenderer.send('setMainWindowVisible', false)
     if (authWindow === undefined || authWindow?.isDestroyed()) {
         authWindow = new global.RemoteBrowserWindow({
-            width: 400, height: 600, center: true, transparent: false, frame: false, alwaysOnTop: true,
+            width: 550, height: 550, center: true, transparent: false, frame: false, alwaysOnTop: true,
             show: false,
             // parent: global.mainWindow, modal: true,
             webPreferences: { nodeIntegration: true, contextIsolation: false, enableRemoteModule: true }

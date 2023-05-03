@@ -17,14 +17,13 @@ const {getInputProxy, getDivProxy} = require("./utils");
 const {getUser, deleteUser, showWindow, setUser} = require("./actions");
 
 
-
-
 class LoginManager {
-    constructor() {
+    constructor({isOffline}) {
+        console.log('LoginManager init')
         $('#loginSubmit').on('click', this.handleSignIn)
         $('#anonymousSignIn').on('click', this.handleAnonymousSignIn)
         $('#closeBtn').on('click', this.handleAnonymousSignIn)
-        console.log('LoginManager init')
+        this.isOffline = isOffline
         window.LM = this
     }
 
@@ -53,6 +52,9 @@ class LoginManager {
                 break
             case 'auth/wrong-password':
                 this.setError('password', message)
+                break
+            case 'auth/invalid-custom-token':
+                this.setError('loginAll', message)
                 break
             default:
                 console.warn(error)
@@ -96,19 +98,31 @@ class LoginManager {
 
     restoreUser = async () => {
         const user = await getUser()
-        if (user !== undefined && user !== null) {
-            try {
-                if (user.isAnonymous) {
-                    await this.handleAnonymousSignIn()
+        switch (this.isOffline) {
+            case false:
+                if (user !== undefined && user !== null) {
+                    try {
+                        if (user.isAnonymous) {
+                            await this.handleAnonymousSignIn()
+                        } else {
+                            await signInWithCustomToken(auth, user.customToken)
+                        }
+                    } catch (e) {
+                        showWindow()
+                        this.handleSignInError(e)
+                    }
                 } else {
-                    await signInWithCustomToken(auth, user.customToken)
+                    showWindow()
                 }
-            } catch (e) {
-                showWindow()
-                this.handleSignInError(e)
-            }
-        } else {
-            showWindow()
+                break
+            case true:
+            default:
+                if (user !== undefined && user !== null) {
+                    window.close()
+                } else {
+                    await this.handleAnonymousSignIn()
+                }
+
         }
     }
 
