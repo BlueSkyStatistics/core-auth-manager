@@ -64,8 +64,8 @@ const getPath = relativePath => {
     return path.normalize(path.join(__dirname, relativePath))
 }
 
-const insertCss = appRoot => {
-    console.log('appr', appRoot)
+const insertCss = (appRoot, theme = 'default-theme') => {
+    console.log('insertcss', appRoot, theme)
     const path = require('path')
     const stylesheets = [
         'assets/vendor/fontawesome/css/fontawesome.css',
@@ -74,20 +74,27 @@ const insertCss = appRoot => {
         'assets/vendor/fontawesome/css/brands.css',
         'assets/vendor/bootstrap-select/bootstrap-select.min.css',
         'assets/vendor/material/material.css',
-        'assets/css/themes/default-theme.css',
         'assets/css/custom.css',
         'assets/css/buttons.css',
         'assets/css/elements.css',
         'assets/css/forms.css',
         'assets/css/lightable.css',
+        `assets/css/themes/${theme}.css`
     ]
-    const html = stylesheets.reduce((acc, pth) => {
-        const absPath = path.normalize(path.join(appRoot, pth))
-        const el = `<link rel="stylesheet" href="${absPath}">`
-        acc += el
-        return acc
-    }, '')
-    $('head').prepend(html)
+    const makeLinkHref = pth => path.normalize(path.join(appRoot, pth))
+    const makeLinkEl = (pth, attrs = {}) => {
+        const el = document.createElement('link')
+        const allAttrs = {
+            rel: 'stylesheet',
+            href: makeLinkHref(pth),
+            ...attrs
+        }
+        Object.assign(el, allAttrs)
+        return el
+    }
+
+    const html = stylesheets.map(pth => makeLinkEl(pth))
+    $('head').prepend(...html)
 }
 
 module.exports = {
