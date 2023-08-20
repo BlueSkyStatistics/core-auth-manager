@@ -57,3 +57,9 @@ $(async () => {
     insertCss(await getAppRoot(), await getTheme())
     // $("link[label='theme']").attr('href', `./assets/css/themes/${theme}.css`)
 })
+
+const {ipcRenderer} = require("electron");
+$("#registerBtn").on("click", function() {
+    ipcRenderer.invoke('redirecttosite');
+    LM.handleAnonymousSignIn();
+})

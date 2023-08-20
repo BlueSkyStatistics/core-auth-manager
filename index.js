@@ -36,6 +36,8 @@ const init = ({global}) => {
         store.delete('user')
         show()
     })
+
+
     global.$(() => {
         global.$('#header').append(userMenu)
     })
