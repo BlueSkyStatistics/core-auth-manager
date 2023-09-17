@@ -33,6 +33,7 @@ const init = ({global}) => {
         </div>
     `)
     userMenu.find('button#logOut').on('click', () => {
+        sessionStore.delete('userSubscriptions')
         store.delete('user')
         show()
     })
@@ -47,6 +48,12 @@ const init = ({global}) => {
             key: 'user',
             storeName: 'store',
             value: argument
+        }).then(() => {
+            PM.getPackagesVersions().then(modulesVersions => {
+                sessionStore.set("modulesVersions", modulesVersions)
+                mMenu.reloadMarketDialog()
+                mMenu.recreateMenuObject()
+            })
         })
         const {displayName, email} = argument
         global.$('#userMenu').find('#displayName').text(displayName || email)
@@ -54,6 +61,7 @@ const init = ({global}) => {
 
     ipcRenderer.on('authDeleteUser', (event, argument) => {
         console.log('deleting user')
+        // global.sessionStore.delete('userSubscriptions')
         return global.store.delete('user')
     })
 
@@ -88,7 +96,7 @@ const show = () => {
     ipcRenderer.send('setMainWindowVisible', false)
     if (authWindow === undefined || authWindow?.isDestroyed()) {
         authWindow = new global.RemoteBrowserWindow({
-            width: 550, height: 550, center: true, transparent: false, frame: false, alwaysOnTop: true,
+            width: 550, height: 400, center: true, transparent: false, frame: false, alwaysOnTop: true,
             show: false,
             // parent: global.mainWindow, modal: true,
             webPreferences: { nodeIntegration: true, contextIsolation: false, enableRemoteModule: true }
