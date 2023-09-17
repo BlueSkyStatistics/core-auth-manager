@@ -13,8 +13,7 @@ const init = ({global}) => {
                     type="button" data-toggle="dropdown" 
                     aria-haspopup="true" aria-expanded="false"
                 >
-                    <i class="material-icons md-14">face</i>
-                    <span class="btn-top-menu mx-1" id="displayName"></span>
+                    <span class="btn-top-menu mx-1" id="displayName">Anonymous</span>
                 </button>
                 <div 
                     class="dropdown-menu tab-content-black" 
@@ -79,7 +78,7 @@ const init = ({global}) => {
             // ipcRenderer.send('bsevent', {event: 'notify', data: {message: 'AUTH WINDOW CLOSED'}})
             const {displayName, email, isAnonymous} = store.get('user', {})
             global.window.console.log('HIDE', {displayName, email, isAnonymous})
-            const dropdownText = isAnonymous ? '' : displayName || email
+            const dropdownText = isAnonymous ? 'Anonymous' : displayName || email
             global.$('#userMenu').find('#userMenu_dropdown > i').css('display', isAnonymous ? 'initial' : 'none')
             global.$('#userMenu').find('#userMenu_dropdown_items > button > span').text(isAnonymous ? 'Log In' : 'Log Out')
             global.$('#userMenu').find('#userMenu_dropdown_items > button').attr('disabled', !!store.get('offline'))
