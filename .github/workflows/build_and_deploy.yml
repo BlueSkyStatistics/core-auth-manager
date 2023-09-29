@@ -2,6 +2,17 @@ name: Buld and deploy
 
 on:
   workflow_dispatch:
+    inputs:
+      release_github:
+        description: 'Make a github release'
+        required: false
+        type: boolean
+        default: true
+      release_firebase:
+        description: 'Make a firebase release'
+        required: false
+        type: boolean
+        default: true
 
 env:
   MODULE_NAME_KEY: 'name'
@@ -19,7 +30,7 @@ jobs:
       - name: Load Module Meta
         id: module_meta
         run: |
-          export MODULE_NAME=$(python3 -c "import json; print(json.load(open('package.json', 'r'))['${{ env.MODULE_NAME_KEY }}'])")
+          export MODULE_NAME=$(python3 -c "import json; print(json.load(open('package.json', 'r'))['${{ env.MODULE_NAME_KEY }}'].split('/')[-1])")
           echo "MODULE_NAME=$MODULE_NAME" >> "$GITHUB_OUTPUT"
           
           export MODULE_VERSION=$(python3 -c "import json; print(json.load(open('package.json', 'r'))['${{ env.MODULE_VERSION_KEY }}'])")
@@ -57,6 +68,7 @@ jobs:
 
 
   release_github:
+     if: inputs.release_github
      needs: build
      runs-on: ubuntu-latest
      steps:
@@ -73,6 +85,7 @@ jobs:
            generate_release_notes: true
 
   release_firebase:
+    if: inputs.release_firebase
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -109,4 +122,3 @@ jobs:
 
       - name: Upload
         run: python3 upload.py '${{ secrets.FIREBASE_CREDS }}' '${{ needs.build.outputs.MODULE_NAME }}' '${{ needs.build.outputs.MODULE_SUBSCRIPTION }}' '${{ needs.build.outputs.MODULE_VERSION }}'
-        
