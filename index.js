@@ -49,7 +49,7 @@ const init = ({global}) => {
             storeName: 'store',
             value: argument
         }).then(() => {
-            PM.getPackagesVersions().then(modulesVersions => {
+            PM.getUpdateMeta(true).then(modulesVersions => {
                 sessionStore.set("modulesVersions", modulesVersions)
                 mMenu.reloadMarketDialog()
                 mMenu.recreateMenuObject()
