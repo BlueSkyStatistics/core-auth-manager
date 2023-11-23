@@ -51,8 +51,9 @@ const init = ({global}) => {
         }).then(() => {
             PM.getUpdateMeta(true).then(modulesVersions => {
                 sessionStore.set("modulesVersions", modulesVersions)
-                mMenu.reloadMarketDialog()
-                mMenu.recreateMenuObject()
+                resumeAppLoad()
+                // mMenu.reloadMarketDialog()
+                // mMenu.recreateMenuObject()
             })
         })
         const {displayName, email} = argument
