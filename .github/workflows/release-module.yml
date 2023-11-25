@@ -1,0 +1,182 @@
+name: Release Module
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Where we are going to release now'
+        type: choice
+        options:
+        - github
+        - firebase
+
+env:
+  MODULE_NAME_KEY: 'name'
+  MODULE_VERSION_KEY: 'version'
+  MODULE_SUBSCRIPTIONS_KEY: 'subscriptions'
+  MODULE_DEFAULT_SUBSCRIPTION: 'public'
+  FIREBASE_MODULES_COLLECTION: 'modules'
+  FIREBASE_MODULES_CACHE_COLLECTION: 'modules_cache'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.0.0
+
+      - name: Load Module Meta
+        id: module_meta
+        run: |
+          export MODULE_NAME=$(python3 -c "import json; print(json.load(open('package.json', 'r'))['${{ env.MODULE_NAME_KEY }}'].split('/')[-1])")
+          echo "MODULE_NAME=$MODULE_NAME" >> "$GITHUB_OUTPUT"
+          
+          export MODULE_VERSION=$(python3 -c "import json; print(json.load(open('package.json', 'r'))['${{ env.MODULE_VERSION_KEY }}'])")
+          echo "MODULE_VERSION=$MODULE_VERSION" >> "$GITHUB_OUTPUT"
+          
+          export MODULE_SUBSCRIPTION=$(python3 -c "import json; print(json.load(open('package.json', 'r')).get('${{ env.MODULE_SUBSCRIPTIONS_KEY }}', ['${{ env.MODULE_DEFAULT_SUBSCRIPTION }}'])[0])")
+          echo "MODULE_SUBSCRIPTION=$MODULE_SUBSCRIPTION" >> "$GITHUB_OUTPUT"
+          
+      - name: Node 16 setup
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Pack .asar
+        run: |
+          npm i
+          npm i -g @electron/asar
+          asar pack . "${{ steps.module_meta.outputs.MODULE_NAME }}.asar"
+          
+      - name: Upload artifact
+        # https://github.com/actions/upload-artifact
+        uses: actions/upload-artifact@v3.1.3
+        with:
+          name: "${{ steps.module_meta.outputs.MODULE_NAME }}_${{ steps.module_meta.outputs.MODULE_VERSION }}.asar"
+          path: "${{ steps.module_meta.outputs.MODULE_NAME }}.asar"
+          retention-days: 1
+          if-no-files-found: error
+        
+      - name: Upload package.json
+        # https://github.com/actions/upload-artifact
+        uses: actions/upload-artifact@v3.1.3
+        with:
+          name: "package.json"
+          path: "package.json"
+          retention-days: 1
+          if-no-files-found: error
+
+    outputs:
+      MODULE_NAME: ${{ steps.module_meta.outputs.MODULE_NAME }}
+      MODULE_VERSION: ${{ steps.module_meta.outputs.MODULE_VERSION }}
+      MODULE_SUBSCRIPTION: ${{ steps.module_meta.outputs.MODULE_SUBSCRIPTION }}
+      ARTIFACT_NAME: "${{ steps.module_meta.outputs.MODULE_NAME }}_${{ steps.module_meta.outputs.MODULE_VERSION }}.asar"
+      PACKAGE_META: ${{ steps.module_meta.outputs.PACKAGE_META }}
+
+
+  release_github:
+     if: ${{ inputs.release_type == 'github' }}
+     needs: build
+     runs-on: ubuntu-latest
+     steps:
+       - name: Download Artifact
+         uses: actions/download-artifact@v3.0.2
+         with:
+           name: ${{ needs.build.outputs.ARTIFACT_NAME }}
+            
+       - name: GH Release
+         uses: softprops/action-gh-release@v1
+         with:
+           tag_name: ${{ needs.build.outputs.MODULE_VERSION }}
+           files: "${{ needs.build.outputs.MODULE_NAME }}.asar"
+           generate_release_notes: true
+
+  release_firebase:
+    if: ${{ inputs.release_type == 'firebase' }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v3.0.2
+        with:
+          name: ${{ needs.build.outputs.ARTIFACT_NAME }}
+
+      - name: Prepare python
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install firebase_admin
+
+      - name: Prepare upload.py
+        run: |
+          cat > upload.py << EOF
+          import sys, json
+          from firebase_admin import credentials, initialize_app, storage
+          _, FIREBASE_CREDS, MODULE_NAME, FOLDER_NAME, VERSION, *_ = sys.argv
+          FILE_NAME = f'{MODULE_NAME}.asar'
+          print('FIREBASE_CREDS', FIREBASE_CREDS)
+          print('MODULE_NAME', MODULE_NAME)
+          print('FILE_NAME', FILE_NAME)
+          print('FOLDER_NAME', FOLDER_NAME)
+          print('VERSION', VERSION)
+          service_account = json.loads(FIREBASE_CREDS)
+          BUCKET_NAME = f'{service_account["project_id"]}.appspot.com'
+          print('BUCKET_NAME', BUCKET_NAME)
+          cred = credentials.Certificate(service_account)
+          initialize_app(cred)
+          bucket = storage.bucket(BUCKET_NAME)
+          blob = bucket.blob(f'{FOLDER_NAME}/{MODULE_NAME}/{VERSION}/{FILE_NAME}')
+          blob.upload_from_filename(FILE_NAME)
+          print('Done', blob.public_url)
+          EOF
+          echo "upload.py ready"
+
+      - name: Download package.json
+        uses: actions/download-artifact@v3.0.2
+        with:
+          name: "package.json"
+          
+      - name: Prepare update_firestore.py
+        run: |
+          cat > update_firestore.py << EOF
+          import sys, json
+          from firebase_admin import credentials, initialize_app, firestore
+          
+          _, FIREBASE_CREDS, MODULE_NAME, *_ = sys.argv
+          service_account = json.loads(FIREBASE_CREDS)
+          collection_name = '${{ env.FIREBASE_MODULES_COLLECTION }}'
+          cache_collection_name = '${{ env.FIREBASE_MODULES_CACHE_COLLECTION }}'
+          package_data = json.load(open('package.json', 'r'))
+          print('package_data', package_data)
+          data = {'name': MODULE_NAME}
+          for i in ['main', 'group', 'subscriptions', 'moduleMeta', 'minBSkyVersion', 'minAppVersion', 'requiredPackages', 'version']:
+            data[i] = package_data.get(i)
+          cred = credentials.Certificate(service_account)
+          initialize_app(cred)
+          db = firestore.client()
+          document_id = f'{MODULE_NAME}_{data["version"]}'
+          print('doc id', document_id)
+          db.collection(collection_name).document(document_id).set(data)
+          print('Firestore data set')
+          
+          def delete_collection(coll_ref, batch_size: int = 15):
+              docs = coll_ref.list_documents(page_size=batch_size)
+              deleted = 0
+          
+              for doc in docs:
+                  print(f"Deleting doc {doc.id} => {doc.get().to_dict()}")
+                  doc.delete()
+                  deleted = deleted + 1
+          
+              if deleted >= batch_size:
+                  return delete_collection(coll_ref, batch_size)
+              
+          delete_collection(db.collection(cache_collection_name))
+          print(f'Collection {cache_collection_name} cleared')
+          print('Done', 'update_firestore')
+          EOF
+          echo "update_firestore.py ready"
+
+      - name: Upload
+        run: python3 upload.py '${{ secrets.FIREBASE_CREDS }}' '${{ needs.build.outputs.MODULE_NAME }}' '${{ needs.build.outputs.MODULE_SUBSCRIPTION }}' '${{ needs.build.outputs.MODULE_VERSION }}'
+      - name: Update firestore
+        run: python3 update_firestore.py '${{ secrets.FIREBASE_CREDS }}' '${{ needs.build.outputs.MODULE_NAME }}'
