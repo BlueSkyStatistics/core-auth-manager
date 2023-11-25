@@ -37,9 +37,13 @@ const init = ({global}) => {
         show()
     })
 
-
-    global.$(() => {
-        global.$('#header').append(userMenu)
+    ipcRenderer.on('init-done', (event, argument) => {
+        global.$(() => {
+            global.$('#header').append(userMenu)
+        })
+        if (store.get('user') !== undefined) {
+            global.$('#userMenu').find('#displayName').text(store.get('user').displayName || store.get('user').email)
+        }
     })
 
     ipcRenderer.on('authSetUser', (event, argument) => {
@@ -48,10 +52,8 @@ const init = ({global}) => {
             storeName: 'store',
             value: argument
         }).then(() => {
-            PM.getPackagesVersions().then(modulesVersions => {
-                sessionStore.set("modulesVersions", modulesVersions)
-                mMenu.reloadMarketDialog()
-                mMenu.recreateMenuObject()
+            PM.getUpdateMeta(true).then(() => {
+                resumeAppLoad()
             })
         })
         const {displayName, email} = argument
