@@ -52,8 +52,8 @@ const init = ({global}) => {
             storeName: 'store',
             value: argument
         }).then(() => {
-            PM.getUpdateMeta(true).then(() => {
-                resumeAppLoad()
+            PM.getUpdateMeta(true).then(async () => {
+                await resumeAppLoad()
             })
         })
         const {displayName, email} = argument

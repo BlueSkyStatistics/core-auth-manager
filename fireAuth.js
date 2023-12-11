@@ -26,13 +26,18 @@ $(async () => {
             console.log('signed in', user)
 
             const {uid, displayName, email, isAnonymous} = user
-            const bsUser = {uid, displayName, email, isAnonymous}
-            const tokenUrl = firebaseConfig.authTokenUrl
+            const idToken = await user.getIdToken(true)
+            // if (idToken === user.accessToken) {
+            //     console.log('Tokens are same')
+            // } else {
+            //     console.warn('NEW TOKEN', {idToken})
+            //     console.log('Auth state changed:', user)
+            // }
+
+            const bsUser = {uid, displayName, email, isAnonymous, idToken}
             console.log('fetching custom token')
-            const customTokenResp = await fetch(tokenUrl, {
-                method: 'POST',
-                headers: {'content-type': 'application/json'},
-                body: JSON.stringify({uid: user.uid})
+            const customTokenResp = await fetch(firebaseConfig.authTokenUrl, {
+                headers: {'Authorization': 'Bearer ' + idToken}
             })
             if (customTokenResp.ok) {
                 const {token: customToken} = await customTokenResp.json()
@@ -41,6 +46,7 @@ $(async () => {
             } else {
                 console.error('Error getting custom token', customTokenResp)
             }
+
             console.log('setting store user', bsUser)
             setUser(bsUser)
             console.log('user set in store')
@@ -59,7 +65,7 @@ $(async () => {
 })
 
 const {ipcRenderer} = require("electron");
-$("#registerBtn").on("click", function() {
-    ipcRenderer.invoke('redirecttosite');
-    LM.handleAnonymousSignIn();
+$("#registerBtn").on("click", async function() {
+    await ipcRenderer.invoke('redirecttosite');
+    await LM.handleAnonymousSignIn();
 })
