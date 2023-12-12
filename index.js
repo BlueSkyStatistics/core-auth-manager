@@ -13,7 +13,7 @@ const init = ({global}) => {
                     type="button" data-toggle="dropdown" 
                     aria-haspopup="true" aria-expanded="false"
                 >
-                    <span class="btn-top-menu mx-1" id="displayName">Anonymous</span>
+                    <span class="btn-top-menu mx-1" id="displayName">Log In</span>
                 </button>
                 <div 
                     class="dropdown-menu tab-content-black" 
@@ -25,8 +25,8 @@ const init = ({global}) => {
                             style="-webkit-app-region: no-drag;"
                             id="logOut"
                         >
-                            <i class="material-icons md-14">logout</i>
-                            <span>Log Out</span>
+                            <i class="material-icons md-14">login</i>
+                            <span>Log In</span>
                         </button>
                 </div>
         </div>
@@ -41,8 +41,10 @@ const init = ({global}) => {
         global.$(() => {
             global.$('#account-box').append(userMenu)
         })
-        if (store.get('user') !== undefined) {
+        if (store.get('user') !== undefined && ! store.get('user').isAnonymous) {
             global.$('#userMenu').find('#displayName').text(store.get('user').displayName || store.get('user').email)
+            global.$('#userMenu').find('#userMenu_dropdown_items > button > span').text('Log Out')
+            global.$('#userMenu').find('#userMenu_dropdown_items > button > i.material-icons').text('logout')
         }
     })
 
@@ -80,7 +82,7 @@ const init = ({global}) => {
             // ipcRenderer.send('bsevent', {event: 'notify', data: {message: 'AUTH WINDOW CLOSED'}})
             const {displayName, email, isAnonymous} = store.get('user', {})
             global.window.console.log('HIDE', {displayName, email, isAnonymous})
-            const dropdownText = isAnonymous ? 'Anonymous' : displayName || email
+            const dropdownText = isAnonymous ? 'Log In' : displayName || email
             global.$('#userMenu').find('#userMenu_dropdown > i').css('display', isAnonymous ? 'initial' : 'none')
             global.$('#userMenu').find('#userMenu_dropdown_items > button > span').text(isAnonymous ? 'Log In' : 'Log Out')
             global.$('#userMenu').find('#userMenu_dropdown_items > button').attr('disabled', !!store.get('offline'))
