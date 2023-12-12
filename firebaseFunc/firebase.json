@@ -4,7 +4,7 @@
       "source": "functions",
       "codebase": "default",
       "ignore": [
-        "node_modules",
+        "venv",
         ".git",
         "firebase-debug.log",
         "firebase-debug.*.log"
@@ -12,8 +12,11 @@
     }
   ],
   "emulators": {
+    "auth": {
+      "port": 9099
+    },
     "functions": {
-      "port": 9000
+      "port": 5001
     },
     "ui": {
       "enabled": true

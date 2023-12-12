@@ -5,7 +5,7 @@
     "description": "Auth manager that handles authorization",
     "group": "core",
     "main": "index.js",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "subscriptions": ["public"],
     "moduleMeta": {
             "path": "{{locals}}core-auth-manager.asar",

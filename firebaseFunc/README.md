@@ -3,9 +3,10 @@ First you need to login the firebase. To do this, run the following command
 firebase login 
 ```
 
+make virtual environment for python 3.11
 after this you'd meed to install all dependencies for function in "funstions" folder. To do this, run the following command 
 ```
-npm install
+pip install -r functions/requirements.txt
 ```
 
 To deploy the function, run the following command 
