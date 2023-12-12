@@ -1,49 +1,49 @@
 {
-
-    "name": "@BlueSkyStatistics/core-auth-manager",
-    "productName": "Auth Manager",
-    "description": "Auth manager that handles authorization",
-    "group": "core",
-    "main": "index.js",
-    "version": "1.0.2",
-    "subscriptions": ["public"],
-    "moduleMeta": {
-            "path": "{{locals}}core-auth-manager.asar",
-            "storage": "firebase",
-            "update": "auto",
-            "artifactType": "asar",
-            "extra": {
-                "sourceType": "release",
-                "remote": "BlueSkyStatistics/core-auth-manager"
-            },
-            "removable": true
+  "name": "@BlueSkyStatistics/core-auth-manager",
+  "productName": "Auth Manager",
+  "description": "Auth manager that handles authorization",
+  "group": "core",
+  "main": "index.js",
+  "version": "1.0.3",
+  "subscriptions": [
+    "public"
+  ],
+  "moduleMeta": {
+    "path": "{{locals}}core-auth-manager.asar",
+    "storage": "firebase",
+    "update": "auto",
+    "artifactType": "asar",
+    "extra": {
+      "sourceType": "release",
+      "remote": "BlueSkyStatistics/core-auth-manager"
     },
-    "minBSkyVersion": null,
-    "minAppVersion": null,
-    "requiredPackages": [],
-    
-    "keywords": [
-        "auth",
-        "firebase",
-        "login"
-    ],
-    "author": "aspect13",
-    "scripts": {},
-    "dependencies": {
-        "asar": "^3.2.0",
-        "firebase": "^9.19.1",
-        "jquery": "3.5.1"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/BlueSkyStatistics/core-auth-manager.git"
-    },
-    "license": "AGLPL",
-    "bugs": {
-        "url": "https://github.com/BlueSkyStatistics/BlueSkyJS/issues"
-    },
-    "publishConfig": {
-        "registry": "https://npm.pkg.github.com"
-    },
-    "homepage": "https://www.blueskystatistics.com"
+    "removable": true
+  },
+  "minBSkyVersion": null,
+  "minAppVersion": null,
+  "requiredPackages": [],
+  "keywords": [
+    "auth",
+    "firebase",
+    "login"
+  ],
+  "author": "aspect13",
+  "scripts": {},
+  "dependencies": {
+    "asar": "^3.2.0",
+    "firebase": "^9.19.1",
+    "jquery": "3.5.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BlueSkyStatistics/core-auth-manager.git"
+  },
+  "license": "AGLPL",
+  "bugs": {
+    "url": "https://github.com/BlueSkyStatistics/BlueSkyJS/issues"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "homepage": "https://www.blueskystatistics.com"
 }
