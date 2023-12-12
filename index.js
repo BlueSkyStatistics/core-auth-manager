@@ -39,7 +39,7 @@ const init = ({global}) => {
 
     ipcRenderer.on('init-done', (event, argument) => {
         global.$(() => {
-            global.$('#header').append(userMenu)
+            global.$('#account-box').append(userMenu)
         })
         if (store.get('user') !== undefined) {
             global.$('#userMenu').find('#displayName').text(store.get('user').displayName || store.get('user').email)
