@@ -8,6 +8,7 @@ after this you'd meed to install all dependencies for function in "funstions" fo
 ```
 pip install -r functions/requirements.txt
 ```
+Google service acccount is required for function to operate. It needs to be placed in ./functions/firebaseAdmin.json
 
 To deploy the function, run the following command 
 ```
