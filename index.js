@@ -65,7 +65,7 @@ const init = ({global}) => {
     ipcRenderer.on('authDeleteUser', (event, argument) => {
         console.log('deleting user')
         // global.sessionStore.delete('userSubscriptions')
-        return global.store.delete('user')
+        return global?.store?.delete('user') || store?.delete('user')
     })
 
     ipcRenderer.on('setAuthWindowVisible', (event, argument) => {
@@ -81,7 +81,7 @@ const init = ({global}) => {
         } else {
             // ipcRenderer.send('bsevent', {event: 'notify', data: {message: 'AUTH WINDOW CLOSED'}})
             const {displayName, email, isAnonymous} = store.get('user', {})
-            global.window.console.log('HIDE', {displayName, email, isAnonymous})
+            // global.window.console.log('HIDE', store.get('user', {}))
             const dropdownText = isAnonymous ? 'Log In' : displayName || email
             global.$('#userMenu').find('#userMenu_dropdown > i').css('display', isAnonymous ? 'initial' : 'none')
             global.$('#userMenu').find('#userMenu_dropdown_items > button > span').text(isAnonymous ? 'Log In' : 'Log Out')

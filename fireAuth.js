@@ -15,6 +15,7 @@ $(async () => {
     const LoginManager = require("./LoginManager")
 
     onAuthStateChanged(auth, async (user) => {
+
         if (window.LM === undefined) {
             const isOffline = await getOffline()
             window.LM = new LoginManager({isOffline})
@@ -26,25 +27,27 @@ $(async () => {
             console.log('signed in', user)
 
             const {uid, displayName, email, isAnonymous} = user
-            const idToken = await user.getIdToken(true)
-            // if (idToken === user.accessToken) {
-            //     console.log('Tokens are same')
-            // } else {
-            //     console.warn('NEW TOKEN', {idToken})
-            //     console.log('Auth state changed:', user)
-            // }
+            const bsUser = {uid, displayName, email, isAnonymous, lastLogin: new Date().getTime()}
+            if (!isAnonymous) {
+                bsUser.idToken = await user.getIdToken(true)
+                // if (idToken === user.accessToken) {
+                //     console.log('Tokens are same')
+                // } else {
+                //     console.warn('NEW TOKEN', {idToken})
+                //     console.log('Auth state changed:', user)
+                // }
 
-            const bsUser = {uid, displayName, email, isAnonymous, idToken}
-            console.log('fetching custom token')
-            const customTokenResp = await fetch(firebaseConfig.authTokenUrl, {
-                headers: {'Authorization': 'Bearer ' + idToken}
-            })
-            if (customTokenResp.ok) {
-                const {token: customToken} = await customTokenResp.json()
-                bsUser.customToken = customToken
-                console.log('custom token success', customToken)
-            } else {
-                console.error('Error getting custom token', customTokenResp)
+                console.log('fetching custom token')
+                const customTokenResp = await fetch(firebaseConfig.authTokenUrl, {
+                    headers: {'Authorization': 'Bearer ' + bsUser.idToken}
+                })
+                if (customTokenResp.ok) {
+                    const {token: customToken} = await customTokenResp.json()
+                    bsUser.customToken = customToken
+                    console.log('custom token success', customToken)
+                } else {
+                    console.error('Error getting custom token', customTokenResp)
+                }
             }
 
             console.log('setting store user', bsUser)
@@ -65,7 +68,7 @@ $(async () => {
 })
 
 const {ipcRenderer} = require("electron");
-$("#registerBtn").on("click", async function() {
+$("#registerBtn").on("click", async function () {
     await ipcRenderer.invoke('redirecttosite');
     await LM.handleAnonymousSignIn();
 })

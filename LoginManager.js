@@ -15,6 +15,8 @@ const {
 
 const {getInputProxy, getDivProxy} = require("./utils");
 const {getUser, deleteUser, showWindow, setUser} = require("./actions");
+const {ipcRenderer} = require("electron");
+const freeOfflineHours = 0
 
 
 class LoginManager {
@@ -78,7 +80,7 @@ class LoginManager {
         console.log('logging in anonymously')
         try {
             // await signInAnonymously(auth)
-            const bsUser = {uid: '', displayName: '', email: '', isAnonymous: true}
+            const bsUser = {uid: '', displayName: '', email: '', isAnonymous: true, lastLogin: new Date().getTime()}
             console.log('setting store user', bsUser)
             setUser(bsUser)
             console.log('user set in store')
@@ -105,6 +107,10 @@ class LoginManager {
                         if (user.isAnonymous) {
                             await this.handleAnonymousSignIn()
                         } else {
+                            // verify token here
+                            // after sign-in check if expired and probably refresh
+                            // https://stackoverflow.com/questions/49287144/firebase-auth-admin-custom-tokens-cannot-be-refreshed-after-one-hour
+                            // https://firebase.google.com/docs/reference/rest/auth
                             await signInWithCustomToken(auth, user.customToken)
                         }
                     } catch (e) {
@@ -118,6 +124,36 @@ class LoginManager {
             case true:
             default:
                 if (user !== undefined && user !== null) {
+                    if (user.lastLogin && !user.isAnonymous) {
+                        // new BSEvent('notify').emit('here')
+                        const deltaHours = (new Date() - user.lastLogin) / 36e5
+                        if (deltaHours > freeOfflineHours) {
+                            // await this.handleAnonymousSignIn()
+                            ipcRenderer.send('bsevent', {
+                                event: 'notify', data: {
+                                    timer: false,
+                                    title: 'Offline warning',
+                                    message: 'You have been logged out',
+                                    type: 'warning'
+                                }})
+                            await this.handleSignOut()
+                            // showWindow()
+                            await this.handleAnonymousSignIn()
+                            return
+                        } else {
+                            ipcRenderer.send('bsevent', {
+                                event: 'notify', data: {
+                                    timer: false,
+                                    title: 'Offline warning',
+                                    message: `You will be logged out after ${(freeOfflineHours - deltaHours).toFixed(1)} hours if you continue using application in offline mode`,
+                                    type: 'warning'
+                                }
+                            })
+                        }
+                    } else {
+                        user.lastLogin = new Date().getTime()
+                    }
+                    setUser(user)
                     window.close()
                 } else {
                     await this.handleAnonymousSignIn()
@@ -133,9 +169,6 @@ class LoginManager {
         console.log('user deleted from store')
     }
 }
-
-
-
 
 
 module.exports = LoginManager
