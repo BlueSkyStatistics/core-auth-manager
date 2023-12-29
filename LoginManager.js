@@ -16,7 +16,7 @@ const {
 const {getInputProxy, getDivProxy} = require("./utils");
 const {getUser, deleteUser, showWindow, setUser} = require("./actions");
 const {ipcRenderer} = require("electron");
-const freeOfflineHours = 0
+const freeOfflineHours = 48
 
 
 class LoginManager {
